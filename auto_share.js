@@ -8,6 +8,8 @@
     const shareModalId = "#share-popup";
     const followerShareClass = ".pm-followers-share-link";
 
+    const isVisible = el => el.offsetParent !== null || getComputedStyle(el).display !== "none";
+    const getCaptchaElement = () => document.querySelector("#captcha-popup");
     const getWindowHeight = () => document.body.offsetHeight;
     const scrollToBottomOfPage = () => {
         statusDiv.innerText = "Scrolling...";
@@ -17,7 +19,7 @@
     const getActiveTiles = () => {
         const allTiles = getAllTiles();
 
-        return Array.prototype.filter.call(allTiles, 
+        return Array.prototype.filter.call(allTiles,
             tile => tile.querySelector(inventoryTagClass) === null)
     };
     const shuffle = (array) => {
@@ -46,21 +48,25 @@
         const shareToFollowersButton = shareModal.querySelector(followerShareClass);
         const activeTiles = shuffle(getActiveTiles());
         let currentTileIndex = 0;
+        let captchaEl = getCaptchaElement();
 
         const shareNextActiveTile = () => {
             statusDiv.innerText = `Item ${currentTileIndex + 1} of ${activeTiles.length}, sharing...`;
-            const currentTile = activeTiles[currentTileIndex++];
-            const shareButton = getShareButton(currentTile);
+            captchaEl = captchaEl || getCaptchaElement();
 
-            shareButton.click();
-            shareToFollowersButton.click();
+            if (!captchaEl || !isVisible(captchaEl)){
+                const currentTile = activeTiles[currentTileIndex++];
+                const shareButton = getShareButton(currentTile);
 
+                shareButton.click();
+                shareToFollowersButton.click();
+            }
             if (currentTileIndex < activeTiles.length) {
                 let waitTime = Math.floor(Math.random() * Math.floor(4)) + 1;
                 window.setTimeout(shareNextActiveTile, waitTime * 1000);
                 statusDiv.innerText = `Item ${currentTileIndex + 1} of ${activeTiles.length}, shared, waiting...`;
             } else {
-                window.alert("All Done Meri Jaan! I love you!");
+                window.alert("All Done! I love you!");
                 statusDiv.remove();
             }
         };
