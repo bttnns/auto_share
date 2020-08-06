@@ -1,88 +1,77 @@
-(function($) {
-    const ajaxSuccessEvent = "lprequestend";
-    const statusDiv = document.createElement("div");
-    statusDiv.style.cssText = "position: fixed; top: 0px; left: 0px; z-index: 999; color: white; background: red; padding: 2px";
-    document.body.appendChild(statusDiv);
-    const inventoryTagClass = ".inventory-tag";
-    const shareButtonClass = ".share";
-    const shareModalId = "#share-popup";
-    const followerShareClass = ".pm-followers-share-link";
-    const randomMilliseconds = () => Math.floor(Math.random() * (3000 - 1070)) + 1070;
-    const isVisible = el => el.offsetParent !== null || getComputedStyle(el).display !== "none";
-    const getCaptchaElement = () => document.querySelector("#captcha-popup");
-    const getWindowHeight = () => document.body.offsetHeight;
-    const scrollToBottomOfPage = () => {
-        statusDiv.innerText = "Scrolling...";
-        window.scrollTo(0, getWindowHeight());
-    };
-    const getAllTiles = () => document.querySelectorAll(".tile");
-    const getActiveTiles = () => {
-        const allTiles = getAllTiles();
-        window.console.log("You have a total of " + allTiles.length + " items in your closet.");
-        return Array.prototype.filter.call(allTiles, tile => tile.querySelector(inventoryTagClass) === null)
-    };
-    const shuffle = (array) => {
-      let currentIndex = array.length, temporaryValue, randomIndex;
+(function () {
+  const inventoryTagClass = '.tile__inventory-tag';
+  const shareButtonClass = '.social-action-bar__share';
+  const shareModalId = '.internal-share-container';
+  const followerShareClass = '.share-wrapper-container';
 
-      /* While there remain elements to shuffle... */
-      while (0 !== currentIndex) {
+  const isVisible = (el) =>
+    el.offsetParent !== null || getComputedStyle(el).display !== 'none';
+  const getCaptchaElement = () => document.querySelector('.g-recaptcha');
+  const getAllTiles = () => document.querySelectorAll('.tile');
+  const getActiveTiles = () => {
+    const allTiles = getAllTiles();
+    return Array.prototype.filter.call(
+      allTiles,
+      (tile) => tile.querySelector(inventoryTagClass) === null
+    );
+  };
+  const shuffle = (array) => {
+    let currentIndex = array.length, temporaryValue, randomIndex;
 
-        /* Pick a remaining element... */
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex -= 1;
+    /* While there remain elements to shuffle... */
+    while (0 !== currentIndex) {
 
-        /* And swap it with the current element. */
-        temporaryValue = array[currentIndex];
-        array[currentIndex] = array[randomIndex];
-        array[randomIndex] = temporaryValue;
-      }
+      /* Pick a remaining element... */
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1;
 
-      return array;
+      /* And swap it with the current element. */
+      temporaryValue = array[currentIndex];
+      array[currentIndex] = array[randomIndex];
+      array[randomIndex] = temporaryValue;
     };
-    const getShareButton = t => t.querySelector(shareButtonClass);
-    const shareActiveListings = () => {
-        statusDiv.innerText = "Starting to share items.";
-        const shareModal = document.querySelector(shareModalId);
-        const shareToFollowersButton = shareModal.querySelector(followerShareClass);
-        const activeTiles = shuffle(getActiveTiles());
-        let currentTileIndex = 0;
-        let captchaEl = getCaptchaElement();
-        const shareNextActiveTile = () => {
-            statusDiv.innerText = `Item ${currentTileIndex + 1} of ${activeTiles.length}, sharing...`;
-            captchaEl = captchaEl || getCaptchaElement();
-            if (!captchaEl || !isVisible(captchaEl)) {
-                window.console.log("sharing item: " + currentTileIndex + " of " + activeTiles.length + " active listings.");
-                const currentTile = activeTiles[currentTileIndex++];
-                const shareButton = getShareButton(currentTile);
-                shareButton.click();
-                shareToFollowersButton.click();
-            }
-            if (currentTileIndex < activeTiles.length) {
-                let waitTime = Math.floor(Math.random() * Math.floor(4)) + 1;
-                window.setTimeout(shareNextActiveTile, waitTime * 1000);
-                statusDiv.innerText = `Item ${currentTileIndex + 1} of ${activeTiles.length}, shared, waiting...`;
-            } else {
-                window.alert("All Done! I love you!");
-                statusDiv.remove();
-            }
-        };
-        shareNextActiveTile();
+
+    return array;
+  };
+  const getShareButton = (t) => t.querySelector(shareButtonClass);
+
+  const shareActiveListings = () => {
+    const activeTiles = shuffle(getActiveTiles());
+    currentTileIndex = 0;
+    let captchaEl = getCaptchaElement();
+    const shareNextActiveTile = () => {
+      captchaEl = getCaptchaElement();
+
+      if (!captchaEl || !isVisible(captchaEl)) {
+        const currentTile = activeTiles[currentTileIndex++];
+        const shareButton = getShareButton(currentTile);
+
+        shareButton.click();
+
+        window.setTimeout(shareToFollowers, 300);
+      } else {
+        window.setTimeout(shareNextActiveTile, 15000);
+      };
     };
-    let lastWindowHeight = getWindowHeight();
-    const checkHeightAndScroll = () => {
-        statusDiv.innerText = "Checking Height...";
-        const newHeight = getWindowHeight();
-        if (newHeight !== lastWindowHeight) {
-            lastWindowHeight = newHeight;
-            scrollToBottomOfPage();
-        } else {
-            $(document).off("ajaxComplete");
-            shareActiveListings();
-        }
+    const shareToFollowers = () =>  {
+      if (document.querySelector(shareModalId)) {
+          document.querySelector(shareModalId).querySelector(followerShareClass).click();
+          if (currentTileIndex < activeTiles.length) {
+              if (currentTileIndex % 10 == 0 || currentTileIndex == 1) {
+                console.log(currentTileIndex + '/' + activeTiles.length);
+              };
+              var delay = (Math.floor(Math.random() * 7)) + 3;
+              window.setTimeout(shareNextActiveTile, delay * 1000);
+          } else if (currentTileIndex == activeTiles.length) {
+            console.log(currentTileIndex + '/' + activeTiles.length);
+            alert(currentTileIndex + '/' + activeTiles.length + ' items shared!');
+          };
+      } else {
+          window.setTimeout(shareToFollowers, 300);
+      };
     };
-    $(document).ajaxComplete(checkHeightAndScroll);
-    scrollToBottomOfPage();
-    if (Number(document.querySelectorAll(".active a .count")[0].innerText) < 49) {
-        checkHeightAndScroll();
-    }
-})(jQuery);
+
+    shareNextActiveTile();
+  };
+  shareActiveListings();
+})();
