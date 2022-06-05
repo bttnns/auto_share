@@ -1,7 +1,6 @@
 (function(){
     //// scroll all the way to to the bottom of your closet
-    //// click a share button for one of the items
-    //// click the bookmark (after setting it up)
+    //// click the bookmark (after setting it up from the readme)
 
     const inventoryTagClass = ".inventory-tag";
     const shareButtonClass = ".social-action-bar__share";
