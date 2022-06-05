@@ -1,8 +1,8 @@
-# Auto Share PoshMark Bookmarklet for Firefox (other browsers should work too)
+# Auto Share PoshMark Bookmarklet
 
     Automatically share all "active listings" in your poshmark closet. 
 
-This script automates the clicks needed to share your poshmark closet.
+This script automates the clicks needed to share your poshmark closet.  It's been tested on Firefox.  Should work with other browsers.
 
 ## Features
 - repeatedly scrolls to the bottom of the page in your poshmark closet in order to load all your items. *todo* 
